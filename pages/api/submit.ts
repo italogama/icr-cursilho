@@ -11,6 +11,8 @@ type SheetForm = {
   civilStatus: string;
   shirtSize: string;
   address: string;
+  addressCity: string;
+  addressZipCode: string;
   homePhone: string;
   workPhone: string;
   contact1Name: string;
@@ -49,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const response = await sheet.spreadsheets.values.append({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: "A2:Y2",
+      range: "A2:AB2",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [
@@ -63,6 +65,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             body.cpf,
             body.shirtSize,
             body.address,
+            body.addressCity,
+            body.addressZipCode,
             body.homePhone,
             body.workPhone,
             body.contact1Name,

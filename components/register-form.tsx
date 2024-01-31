@@ -42,6 +42,8 @@ const registerFormSchema = z
     civilStatus: z.string({ required_error: "Você deve preencher seu estado civil" }).min(3, { message: "Você deve preencher seu estado civil" }),
     shirtSize: z.string({ required_error: "Escolha um tamanho de camisa" }).min(1, { message: "Você deve escolher um tamanho de camisa" }),
     address: z.string({ required_error: "Você deve preencher seu endereço completo" }).min(3, { message: "Você deve preencher seu endereço" }),
+    addressCity: z.string({ required_error: "Você deve preencher sua cidade" }).min(3, { message: "Você deve preencher sua cidade" }),
+    addressZipCode: z.string({ required_error: "Você deve preencher seu CEP" }).min(3, { message: "Você deve preencher seu CEP" }),
     homePhone: z.string({ required_error: "Você deve preencher um número de telefone" }).regex(phoneRegex, "Número invalido"),
     workPhone: z.string().regex(phoneRegex, "Número invalido").optional(),
     contact1Name: z.string({ required_error: "Você deve preencher o nome do contato" }).min(3, { message: "O nome do contato precisar ter mais de 3 caracteres" }),
@@ -109,6 +111,8 @@ const defaultValues: Partial<RegisterFormValues> = {
   civilStatus: "",
   shirtSize: "",
   address: "",
+  addressCity: "",
+  addressZipCode: "",
   homePhone: "",
   workPhone: "",
   contact1Name: "",
@@ -138,6 +142,8 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
       setIsLoading(true);
 
       const formattedCpf = values.cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+      const formmatedZipCode = values.addressZipCode.replace(/^(\d{5})(\d{3})$/, "$1-$2");
+
       const form = {
         fullName: values.fullName,
         nickname: values.nickname,
@@ -148,8 +154,10 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
         cpf: formattedCpf,
         shirtSize: values.shirtSize,
         address: values.address,
-        homePhone: values.homePhone,
-        workPhone: values.workPhone,
+        addressCity: values.addressCity,
+        addressZipCode: formmatedZipCode,
+        homePhone: values.homePhone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
+        workPhone: values.workPhone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
         contact1Name: values.contact1Name,
         contact1Phone: values.contact1Phone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
         contact2Name: values.contact2Name,
@@ -204,7 +212,6 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
               body: JSON.stringify({ email: form.email }),
             });
             const url = await checkout.json();
-            console.log(url);
             window.location.replace(url.data);
           } else {
             // resetFields();
@@ -395,20 +402,56 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
               )}
             />
           </div>
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="address">Endereço</FormLabel>
-                <FormControl>
-                  <Input id="address" placeholder="Digite seu endereço" type="text" disabled={isLoading} {...field} />
-                </FormControl>
+          <div className="md:flex md:flex-row md:gap-4">
+            <div className="w-full">
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="address">Endereço</FormLabel>
+                    <FormControl>
+                      <Input id="address" placeholder="Digite seu endereço completo" type="text" disabled={isLoading} {...field} />
+                    </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="w-full">
+              <FormField
+                control={form.control}
+                name="addressCity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="addressCity">Cidade</FormLabel>
+                    <FormControl>
+                      <Input id="addressCity" placeholder="Digite sua cidade" type="text" disabled={isLoading} {...field} />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="w-full">
+              <FormField
+                control={form.control}
+                name="addressZipCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="addressZipCode">CEP</FormLabel>
+                    <FormControl>
+                      <Input id="addressZipCode" placeholder="Digite seu CEP" type="text" disabled={isLoading} {...field} />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
           <div className="md:flex md:flex-row md:gap-4">
             <div className="w-full">
               <FormField
