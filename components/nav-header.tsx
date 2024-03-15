@@ -9,12 +9,14 @@ export const NavHeader = () => {
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
         <Link href="/">
           <div className="flex justify-center items-center">
-            <Avatar>
+            <Avatar className="bg-white">
               <AvatarImage src="/newlogoicrpretamedium.png" />
               <AvatarFallback>IC</AvatarFallback>
             </Avatar>
 
-            <div className="text-sm pl-2 font-bold tracking-wide text-primary-foreground md:text-lg">Cursilho de Cristandade - Igreja Cristã em Recife</div>
+            <div className="text-sm pl-2 font-bold tracking-wide text-primary-foreground md:text-lg">
+              Cursilho de Cristandade - Igreja Cristã em Recife
+            </div>
           </div>
         </Link>
         <div className="flex mt-4 gap-2 md:mt-0 md:space-x-4">
