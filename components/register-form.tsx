@@ -739,7 +739,10 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 <Card className="p-4 text-left">
                   <p className="text-sm tracking-wider text-muted-foreground font-bold">
                     Eu <span className="font-bold text-black">{form.getValues("fullName") ? form.getValues("fullName") : "seu nome aqui"} </span>reafirmo todos os dados por mim acima citado, responsabilizando-me a pela minha ida ao movimento Cursilhista nos dias: <span className="font-bold text-black">{eventDate}</span> e chegarei na igreja <span className="font-bold text-black">30 minutos</span>{" "}
-                    antes do horário de saída para o evento
+                    antes do horário de saída para o evento.
+                  </p>
+                  <p className="text-sm tracking-wider text-muted-foreground font-bold">
+                    Estou ciente de que a Igreja <span className="font-bold text-red-500">NÃO</span> realiza devolução/estorno do valor pago após o mesmo ser realizado.
                   </p>
                   <div className="pt-2 flex flex-row items-center gap-2 justify-end">
                     <FormItem className="flex flex-row items-center space-x-2 space-y-0">
