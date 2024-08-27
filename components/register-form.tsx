@@ -16,88 +16,33 @@ import { Calendar } from "./ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Checkbox } from "./ui/checkbox";
 import { Card } from "./ui/card";
 import Swal from "sweetalert2";
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
 import RegisterHeader from "./register-header";
-import { civilStatusType, phoneRegex, tshirtSizes } from "@/lib/helpers/helpers";
+import { civilStatusType, tshirtSizes } from "@/lib/helpers/helpers";
 import { TextDivider } from "./text-divider";
 import Link from "next/link";
+import { registerFormSchema } from "./registerUtils";
 
 interface RegisterFormProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const registerFormSchema = z
-  .object({
-    fullName: z.string({ required_error: "Você deve preencher seu nome completo" }).min(5, { message: "Seu nome precisa ter mais de 5 caracteres" }),
-    cpf: z.string({ required_error: "Você deve preencher seu CPF" }).min(3, { message: "Seu cpf precisa ter 11 digitos" }),
-    profession: z.string({ required_error: "Você deve preencher sua profissão" }).min(3, { message: "Sua profissão precisa ter mais de 3 caracteres" }),
-    nickname: z.string({ required_error: "Você deve preencher como deseja ser chamado" }).min(3, { message: "Seu apelido precisa ter mais de 3 caracteres" }),
-    email: z.string({ required_error: "Você deve preencher seu email" }).email({ message: "Você deve preencher um email válido" }),
-    birthDate: z.date({
-      required_error: "Você deve preencher sua data de nascimento",
-    }),
-    civilStatus: z.string({ required_error: "Você deve preencher seu estado civil" }).min(3, { message: "Você deve preencher seu estado civil" }),
-    shirtSize: z.string({ required_error: "Escolha um tamanho de camisa" }).min(1, { message: "Você deve escolher um tamanho de camisa" }),
-    address: z.string({ required_error: "Você deve preencher seu endereço completo" }).min(3, { message: "Você deve preencher seu endereço" }),
-    addressCity: z.string({ required_error: "Você deve preencher sua cidade" }).min(3, { message: "Você deve preencher sua cidade" }),
-    addressZipCode: z.string({ required_error: "Você deve preencher seu CEP" }).min(3, { message: "Você deve preencher seu CEP" }),
-    homePhone: z.string({ required_error: "Você deve preencher um número de telefone" }).regex(phoneRegex, "Número invalido"),
-    workPhone: z.string().regex(phoneRegex, "Número invalido").optional(),
-    contact1Name: z.string({ required_error: "Você deve preencher o nome do contato" }).min(3, { message: "O nome do contato precisar ter mais de 3 caracteres" }),
-    contact1Phone: z.string({ required_error: "Você deve preencher o telefone do contato" }).regex(phoneRegex, "Número invalido"),
-    contact2Name: z.string({ required_error: "Você deve preencher o nome do contato" }).min(3, { message: "O nome do contato precisar ter mais de 3 caracteres" }),
-    contact2Phone: z.string({ required_error: "Você deve preencher o telefone do contato" }).regex(phoneRegex, "Número invalido"),
-    diet: z.enum(["yes", "no"], {
-      invalid_type_error: "Selecione sim ou não",
-      required_error: "Você deve preencher se faz dieta ou não",
-    }),
-    dietSpec: z.string().optional(),
-    healthProblem: z.enum(["yes", "no"], {
-      invalid_type_error: "Selecione sim ou não",
-      required_error: "Você deve preencher se faz dieta ou não",
-    }),
-    healthProblemSpec: z.string().optional(),
-    medication: z.enum(["yes", "no"], {
-      invalid_type_error: "Selecione sim ou não",
-      required_error: "Você deve preencher se tem problema de saúde ou não",
-    }),
-    medicationSpec: z.string().optional(),
-    terms: z.boolean({ required_error: "Você deve aceitar os termos" }),
-    inviterName: z.string({ required_error: "Você deve preencher o nome de quem lhe convidou" }).min(3, { message: "O nome do contato precisar ter mais de 3 caracteres" }),
-    inviterPhone: z.string({ required_error: "Você deve preencher o telefone de quem lhe convidou" }).regex(phoneRegex, "Número invalido"),
-    inviterCursillo: z.enum(["yes", "no"], {
-      invalid_type_error: "Selecione sim ou não",
-      required_error: "Você deve preencher ja fez cursilho ou não",
-    }),
-  })
-  .superRefine(({ diet, dietSpec, healthProblem, healthProblemSpec, medication, medicationSpec }, refinementContext) => {
-    if (diet === "yes" && dietSpec === "") {
-      return refinementContext.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Você deve especificar a dieta",
-        path: ["dietSpec"],
-      });
-    }
-
-    if (healthProblem === "yes" && dietSpec === "") {
-      return refinementContext.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Você deve especificar o problema de saúde",
-        path: ["dietSpec"],
-      });
-    }
-
-    if (medication === "yes" && medicationSpec === "") {
-      return refinementContext.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Você deve especificar a medicação/alergia",
-        path: ["medicationSpec"],
-      });
-    }
-  });
 
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
@@ -107,10 +52,14 @@ const defaultValues: Partial<RegisterFormValues> = {
   cpf: "",
   profession: "",
   email: "",
+  instagram: "",
   birthDate: undefined,
   civilStatus: "",
   shirtSize: "",
-  address: "",
+  addressStreet: "",
+  addressNumber: "",
+  addressComplement: "",
+  addressNeighborhood: "",
   addressCity: "",
   addressZipCode: "",
   homePhone: "",
@@ -141,36 +90,63 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
     try {
       setIsLoading(true);
 
-      const formattedCpf = values.cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
-      const formmatedZipCode = values.addressZipCode.replace(/^(\d{5})(\d{3})$/, "$1-$2");
+      const formattedCpf = values.cpf.replace(
+        /^(\d{3})(\d{3})(\d{3})(\d{2})$/,
+        "$1.$2.$3-$4"
+      );
+      const formmatedZipCode = values.addressZipCode.replace(
+        /^(\d{5})(\d{3})$/,
+        "$1-$2"
+      );
 
       const form = {
         fullName: values.fullName,
         nickname: values.nickname,
+        instagram: values.instagram,
         email: values.email,
         profession: values.profession,
         birthDate: values.birthDate.toLocaleDateString("pt-BR"),
         civilStatus: values.civilStatus,
         cpf: formattedCpf,
         shirtSize: values.shirtSize,
-        address: values.address,
+        addressStreet: values.addressStreet,
+        addressNumber: values.addressNumber,
+        addressComplement: values.addressComplement,
+        addressNeighborhood: values.addressNeighborhood,
         addressCity: values.addressCity,
         addressZipCode: formmatedZipCode,
-        homePhone: values.homePhone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
-        workPhone: values.workPhone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
+        homePhone: values.homePhone.replace(
+          /^(\d{2})(\d{5})(\d{4})$/,
+          "($1) $2-$3"
+        ),
+        workPhone: values.workPhone?.replace(
+          /^(\d{2})(\d{5})(\d{4})$/,
+          "($1) $2-$3"
+        ),
         contact1Name: values.contact1Name,
-        contact1Phone: values.contact1Phone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
+        contact1Phone: values.contact1Phone.replace(
+          /^(\d{2})(\d{5})(\d{4})$/,
+          "($1) $2-$3"
+        ),
         contact2Name: values.contact2Name,
-        contact2Phone: values.contact2Phone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
+        contact2Phone: values.contact2Phone.replace(
+          /^(\d{2})(\d{5})(\d{4})$/,
+          "($1) $2-$3"
+        ),
         diet: values.diet === "yes" ? "Sim" : "Não",
         dietSpec: values.diet === "yes" ? values.dietSpec : "Nenhuma",
         healthProblem: values.healthProblem === "yes" ? "Sim" : "Não",
-        healthProblemSpec: values.healthProblem === "yes" ? values.healthProblemSpec : "Nenhuma",
+        healthProblemSpec:
+          values.healthProblem === "yes" ? values.healthProblemSpec : "Nenhuma",
         medication: values.medication === "yes" ? "Sim" : "Não",
-        medicationSpec: values.medication === "yes" ? values.medicationSpec : "Nenhuma",
+        medicationSpec:
+          values.medication === "yes" ? values.medicationSpec : "Nenhuma",
         terms: values.terms === true ? "Aceito" : "Não aceito",
         inviterName: values.inviterName,
-        inviterPhone: values.inviterPhone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3"),
+        inviterPhone: values.inviterPhone.replace(
+          /^(\d{2})(\d{5})(\d{4})$/,
+          "($1) $2-$3"
+        ),
         inviterCursillo: values.inviterCursillo === "yes" ? "Sim" : "Não",
       };
 
@@ -245,9 +221,15 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="fullName">Nome completo</FormLabel>
+                <FormLabel htmlFor="fullName">Nome completo *</FormLabel>
                 <FormControl>
-                  <Input id="fullName" placeholder="Digite seu nome completo" type="text" disabled={isLoading} {...field} />
+                  <Input
+                    id="fullName"
+                    placeholder="Digite seu nome completo"
+                    type="text"
+                    disabled={isLoading}
+                    {...field}
+                  />
                 </FormControl>
 
                 <FormMessage />
@@ -261,9 +243,16 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="cpf"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="cpf">CPF (apenas números)</FormLabel>
+                    <FormLabel htmlFor="cpf">CPF (apenas números) *</FormLabel>
                     <FormControl>
-                      <Input id="cpf" maxLength={11} placeholder="Digite seu CPF" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="cpf"
+                        maxLength={11}
+                        placeholder="Digite seu CPF"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -277,9 +266,17 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="nickname"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="nickname">Como deseja ser chamado(a)?</FormLabel>
+                    <FormLabel htmlFor="nickname">
+                      Como deseja ser chamado(a)? *
+                    </FormLabel>
                     <FormControl>
-                      <Input id="nickname" placeholder="Digite seu apelido" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="nickname"
+                        placeholder="Digite seu apelido"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -293,9 +290,15 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="profession"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="profession">Profissão</FormLabel>
+                    <FormLabel htmlFor="profession">Profissão *</FormLabel>
                     <FormControl>
-                      <Input id="profession" placeholder="Digite sua profissão" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="profession"
+                        placeholder="Digite sua profissão"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -304,38 +307,87 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
               />
             </div>
           </div>
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="email">Email</FormLabel>
-                <FormControl>
-                  <Input id="email" placeholder="Digite seu email" type="email" disabled={isLoading} {...field} />
-                </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="md:flex md:flex-row md:gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="email">Email *</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="email"
+                      placeholder="Digite seu email"
+                      type="email"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="instagram"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="instagram">Instagram</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="instagram"
+                      placeholder="Digite seu instagram (deixe em branco se não tiver)"
+                      type="text"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <div className="md:flex md:flex-row md:gap-4 md:w-full">
             <FormField
               control={form.control}
               name="birthDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col w-full pt-2">
-                  <FormLabel>Data de Nascimento</FormLabel>
+                  <FormLabel>Data de Nascimento *</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                          {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: ptBR })
+                          ) : (
+                            <span>Selecione uma data</span>
+                          )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus />
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
                     </PopoverContent>
                   </Popover>
 
@@ -349,8 +401,11 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
               name="civilStatus"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Estado Civil</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Estado Civil *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione uma opção" />
                     </SelectTrigger>
@@ -378,8 +433,11 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
               name="shirtSize"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Camisa inclusa escolha o tamanho</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Camisa inclusa escolha o tamanho *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione uma opção" />
                     </SelectTrigger>
@@ -403,54 +461,134 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
             />
           </div>
           <div className="md:flex md:flex-row md:gap-4">
-            <div className="w-full">
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="address">Endereço</FormLabel>
-                    <FormControl>
-                      <Input id="address" placeholder="Digite seu endereço completo" type="text" disabled={isLoading} {...field} />
-                    </FormControl>
+            <FormField
+              control={form.control}
+              name="addressStreet"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="addressStreet">Nome da Rua *</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="addressStreet"
+                      placeholder="Digite sua rua"
+                      type="text"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="w-full">
-              <FormField
-                control={form.control}
-                name="addressCity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="addressCity">Cidade</FormLabel>
-                    <FormControl>
-                      <Input id="addressCity" placeholder="Digite sua cidade" type="text" disabled={isLoading} {...field} />
-                    </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="w-full">
-              <FormField
-                control={form.control}
-                name="addressZipCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="addressZipCode">CEP</FormLabel>
-                    <FormControl>
-                      <Input id="addressZipCode" placeholder="Digite seu CEP" type="text" disabled={isLoading} {...field} />
-                    </FormControl>
+            <FormField
+              control={form.control}
+              name="addressNumber"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="addressNumber">Número Casa *</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="addressNumber"
+                      placeholder="Digite o número da sua casa"
+                      type="text"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="addressComplement"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="addressComplement">
+                    Complemento *
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      id="addressComplement"
+                      placeholder="Digite o seu complemento"
+                      type="text"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="md:flex md:flex-row md:gap-4">
+            <FormField
+              control={form.control}
+              name="addressNeighborhood"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="addressNeighborhood">Bairro *</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="addressNeighborhood"
+                      placeholder="Digite o seu bairro"
+                      type="text"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="addressCity"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="addressCity">Cidade *</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="addressCity"
+                      placeholder="Digite sua cidade"
+                      type="text"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="addressZipCode"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel htmlFor="addressZipCode">CEP *</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="addressZipCode"
+                      placeholder="Digite seu CEP"
+                      type="text"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           <div className="md:flex md:flex-row md:gap-4">
             <div className="w-full">
@@ -459,9 +597,18 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="homePhone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="homePhone">Telefone Residencial</FormLabel>
+                    <FormLabel htmlFor="homePhone">
+                      Telefone Residencial *
+                    </FormLabel>
                     <FormControl>
-                      <Input id="homePhone" placeholder="(xx) xxxxx-xxxx" maxLength={11} type="tel" disabled={isLoading} {...field} />
+                      <Input
+                        id="homePhone"
+                        placeholder="(xx) xxxxx-xxxx"
+                        maxLength={11}
+                        type="tel"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -475,9 +622,18 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="workPhone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="workPhone">Telefone Comercial</FormLabel>
+                    <FormLabel htmlFor="workPhone">
+                      Telefone Comercial
+                    </FormLabel>
                     <FormControl>
-                      <Input id="workPhone" placeholder="(xx) xxxxx-xxxx" maxLength={11} type="tel" disabled={isLoading} {...field} />
+                      <Input
+                        id="workPhone"
+                        placeholder="(xx) xxxxx-xxxx"
+                        maxLength={11}
+                        type="tel"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -496,9 +652,17 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="contact1Name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="contact1Name">Nome (primeiro contato)</FormLabel>
+                    <FormLabel htmlFor="contact1Name">
+                      Nome (primeiro contato) *
+                    </FormLabel>
                     <FormControl>
-                      <Input id="contact1Name" placeholder="Digite o nome do primeiro contato" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="contact1Name"
+                        placeholder="Digite o nome do primeiro contato"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -512,9 +676,18 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="contact1Phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="contact1Phone">Tel. Fixo/Celular (primeiro contato)</FormLabel>
+                    <FormLabel htmlFor="contact1Phone">
+                      Tel. Fixo/Celular (primeiro contato) *
+                    </FormLabel>
                     <FormControl>
-                      <Input id="contact1Phone" placeholder="(xx) xxxxx-xxxx" maxLength={11} type="tel" disabled={isLoading} {...field} />
+                      <Input
+                        id="contact1Phone"
+                        placeholder="(xx) xxxxx-xxxx"
+                        maxLength={11}
+                        type="tel"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -530,9 +703,17 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="contact2Name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="contact2Name">Nome (segundo contato)</FormLabel>
+                    <FormLabel htmlFor="contact2Name">
+                      Nome (segundo contato) *
+                    </FormLabel>
                     <FormControl>
-                      <Input id="contact2Name" placeholder="Digite o nome do segundo contato" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="contact2Name"
+                        placeholder="Digite o nome do segundo contato"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -546,9 +727,18 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="contact2Phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="contact2Phone">Tel. Fixo/Celular (segundo contato)</FormLabel>
+                    <FormLabel htmlFor="contact2Phone">
+                      Tel. Fixo/Celular (segundo contato) *
+                    </FormLabel>
                     <FormControl>
-                      <Input id="contact2Phone" placeholder="(xx) xxxxx-xxxx" maxLength={11} type="tel" disabled={isLoading} {...field} />
+                      <Input
+                        id="contact2Phone"
+                        placeholder="(xx) xxxxx-xxxx"
+                        maxLength={11}
+                        type="tel"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -567,8 +757,11 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="diet"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>Faz dieta prescrita por médico?</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Faz dieta prescrita por médico? *</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione uma opção" />
                       </SelectTrigger>
@@ -606,7 +799,13 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                   <FormItem>
                     <FormLabel htmlFor="dietSpec">Especifique</FormLabel>
                     <FormControl>
-                      <Input id="dietSpec" placeholder="Se faz dieta prescrita por médico, especifique aqui" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="dietSpec"
+                        placeholder="Se faz dieta prescrita por médico, especifique aqui"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -622,9 +821,12 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="healthProblem"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>Tem problema de Saúde?</FormLabel>
+                    <FormLabel>Tem problema de Saúde? *</FormLabel>
 
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione uma opção" />
                       </SelectTrigger>
@@ -660,9 +862,17 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="healthProblemSpec"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="healthProblemSpec">Especifique</FormLabel>
+                    <FormLabel htmlFor="healthProblemSpec">
+                      Especifique
+                    </FormLabel>
                     <FormControl>
-                      <Input id="healthProblemSpec" placeholder="Se tem problema de saúde, especifique aqui" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="healthProblemSpec"
+                        placeholder="Se tem problema de saúde, especifique aqui"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -679,9 +889,12 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="medication"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>Usa medicação ou é alérgico?</FormLabel>
+                    <FormLabel>Usa medicação ou é alérgico? *</FormLabel>
 
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione uma opção" />
                       </SelectTrigger>
@@ -719,7 +932,13 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                   <FormItem>
                     <FormLabel htmlFor="medicationSpec">Especifique</FormLabel>
                     <FormControl>
-                      <Input id="medicationSpec" placeholder="Se usa medicação ou é alérgico, especifique aqui" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="medicationSpec"
+                        placeholder="Se usa medicação ou é alérgico, especifique aqui"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -738,19 +957,35 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
               <>
                 <Card className="p-4 text-left">
                   <p className="text-sm tracking-wider text-muted-foreground font-bold">
-                    Eu <span className="font-bold text-black">{form.getValues("fullName") ? form.getValues("fullName") : "seu nome aqui"} </span>reafirmo todos os dados por mim acima citado, responsabilizando-me a pela minha ida ao movimento Cursilhista nos dias: <span className="font-bold text-black">{eventDate}</span> e chegarei na igreja <span className="font-bold text-black">30 minutos</span>{" "}
+                    Eu{" "}
+                    <span className="font-bold text-black">
+                      {form.getValues("fullName")
+                        ? form.getValues("fullName")
+                        : "seu nome aparece aqui"}{" "}
+                    </span>
+                    reafirmo todos os dados por mim acima citado,
+                    responsabilizando-me a pela minha ida ao movimento
+                    Cursilhista nos dias:{" "}
+                    <span className="font-bold text-black">{eventDate}</span> e
+                    chegarei na igreja{" "}
+                    <span className="font-bold text-black">30 minutos</span>{" "}
                     antes do horário de saída para o evento.
                   </p>
                   <p className="text-sm tracking-wider text-muted-foreground font-bold">
-                    Estou ciente de que a Igreja <span className="font-bold text-red-500">NÃO</span> realiza devolução/estorno do valor pago após o mesmo ser realizado.
+                    Estou ciente de que a Igreja{" "}
+                    <span className="font-bold text-red-500">NÃO</span> realiza
+                    devolução/estorno do valor pago após o mesmo ser realizado.
                   </p>
                   <div className="pt-2 flex flex-row items-center gap-2 justify-end">
                     <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                       <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
                       </FormControl>
                       <div className="leading-none">
-                        <FormLabel>Confirmar</FormLabel>
+                        <FormLabel>Confirmar *</FormLabel>
                       </div>
                     </FormItem>
                   </div>
@@ -769,9 +1004,15 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="inviterName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="inviterName">Nome</FormLabel>
+                    <FormLabel htmlFor="inviterName">Nome *</FormLabel>
                     <FormControl>
-                      <Input id="inviterName" placeholder="Digite o nome de quem lhe convidou" type="text" disabled={isLoading} {...field} />
+                      <Input
+                        id="inviterName"
+                        placeholder="Digite o nome de quem lhe convidou"
+                        type="text"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -785,9 +1026,18 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="inviterPhone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="inviterPhone">Tel. Fixo/Celular</FormLabel>
+                    <FormLabel htmlFor="inviterPhone">
+                      Tel. Fixo/Celular *
+                    </FormLabel>
                     <FormControl>
-                      <Input id="inviterPhone" placeholder="(xx) xxxxx-xxxx" maxLength={11} type="tel" disabled={isLoading} {...field} />
+                      <Input
+                        id="inviterPhone"
+                        placeholder="(xx) xxxxx-xxxx"
+                        maxLength={11}
+                        type="tel"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -801,8 +1051,11 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 name="inviterCursillo"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>Ja fez cursilho?</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Ja fez cursilho? *</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione uma opção" />
                       </SelectTrigger>
@@ -833,17 +1086,29 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
           </div>
 
           <Button disabled={isLoading} type="submit" className="w-full mt-5">
-            {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Confirmar
           </Button>
           <Link href="/">
-            <Button disabled={isLoading} variant={"link"} type="submit" className="w-full mt-3">
-              {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              disabled={isLoading}
+              variant={"link"}
+              type="submit"
+              className="w-full mt-3"
+            >
+              {isLoading && (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Voltar para página inicial
             </Button>
           </Link>
           <Card className="p-2 text-center mt-4">
-            <p className="text-xs font-bold tracking-wider text-muted-foreground md:text-sm">Endereço: Rua Frei Atanásio, n° 304 / Jardim São Paulo / Recife - PE / Fones: (81) 99971-6016 / 99936-5151</p>
+            <p className="text-xs font-bold tracking-wider text-muted-foreground md:text-sm">
+              Endereço: Rua Frei Atanásio, n° 304 / Jardim São Paulo / Recife -
+              PE / Fones: (81) 99971-6016 / 99936-5151
+            </p>
           </Card>
         </form>
       </Form>

@@ -7,10 +7,14 @@ type SheetForm = {
   profession: string;
   nickname: string;
   email: string;
+  instagram: string;
   birthDate: string;
   civilStatus: string;
   shirtSize: string;
-  address: string;
+  addressStreet: string;
+  addressNumber: string;
+  addressComplement: string;
+  addressNeighborhood: string;
   addressCity: string;
   addressZipCode: string;
   homePhone: string;
@@ -31,7 +35,10 @@ type SheetForm = {
   inviterCursillo: string;
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Only POST requests allowed" });
   }
@@ -42,9 +49,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+        private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(
+          /\\n/g,
+          "\n"
+        ),
       },
-      scopes: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/spreadsheets"],
+      scopes: [
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/spreadsheets",
+      ],
     });
 
     const sheet = google.sheets({ version: "v4", auth });
@@ -60,11 +74,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             body.nickname,
             body.profession,
             body.email,
+            body.instagram,
             body.birthDate,
             body.civilStatus,
             body.cpf,
             body.shirtSize,
-            body.address,
+            body.addressStreet,
+            body.addressNumber,
+            body.addressComplement,
+            body.addressNeighborhood,
             body.addressCity,
             body.addressZipCode,
             body.homePhone,
@@ -90,6 +108,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ data: response.data });
   } catch (e: any) {
-    return res.status(500).send({ message: e.message ?? "Something went wrong" });
+    return res
+      .status(500)
+      .send({ message: e.message ?? "Something went wrong" });
   }
 }

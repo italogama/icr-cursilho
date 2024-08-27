@@ -1,7 +1,12 @@
 import { Footer } from "@/components/footer";
 import { NavHeader } from "@/components/nav-header";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { CircleDollarSign, MapPinned, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,9 +32,9 @@ export default function HomePage() {
             />
             <blockquote className="space-y-2 mt-5">
               <p className="text-base indent-0">
-                &ldquo;O Cursilho de Cristandade é uma jornada transformadora que ilumina corações,
-                fortalece a fé e inspira ações cristãs, guiando cada passo rumo a uma vida plena no
-                amor de Deus.&rdquo;
+                &ldquo;O Cursilho de Cristandade é uma jornada transformadora
+                que ilumina corações, fortalece a fé e inspira ações cristãs,
+                guiando cada passo rumo a uma vida plena no amor de Deus.&rdquo;
               </p>
               <footer className="text-sm">Pr. Bruno Moraes</footer>
             </blockquote>
@@ -52,22 +57,35 @@ export default function HomePage() {
               />
 
               <div className="flex flex-col items-center pt-10">
-                <h1 className="text-2xl font-bold tracking-wider sm:text-3xl">{eventTitle}</h1>
+                <h1 className="text-2xl font-bold tracking-wider sm:text-3xl">
+                  {eventTitle}
+                </h1>
 
                 <div className="flex flex-col w-full pt-5">
                   <div className="flex flex-row">
-                    <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Data:</p>
-                    <p className="text-xl text-zinc-900 dark:text-zinc-50 pl-2">{eventDate}</p>
+                    <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                      Data:
+                    </p>
+                    <p className="text-xl text-zinc-900 dark:text-zinc-50 pl-2">
+                      {eventDate}
+                    </p>
                   </div>
 
                   <div className="flex flex-row">
-                    <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Local:</p>
-                    <p className="text-xl text-zinc-900 dark:text-zinc-50 pl-2">{eventLocation}</p>
+                    <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                      Local:
+                    </p>
+                    <p className="text-xl text-zinc-900 dark:text-zinc-50 pl-2">
+                      {eventLocation}
+                    </p>
 
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Link href="https://maps.app.goo.gl/Z2ksWdwRx8iSpmVc8" target="_blank">
+                          <Link
+                            href="https://maps.app.goo.gl/Z2ksWdwRx8iSpmVc8"
+                            target="_blank"
+                          >
                             <MapPinned className="ml-2" />
                           </Link>
                         </TooltipTrigger>
@@ -115,9 +133,9 @@ export default function HomePage() {
 
             <blockquote className="space-y-2 pt-10 sm:hidden">
               <p className="text-sm indent-0">
-                &ldquo;O Cursilho de Cristandade é uma jornada transformadora que ilumina corações,
-                fortalece a fé e inspira ações cristãs, guiando cada passo rumo a uma vida plena no
-                amor de Deus.&rdquo;
+                &ldquo;O Cursilho de Cristandade é uma jornada transformadora
+                que ilumina corações, fortalece a fé e inspira ações cristãs,
+                guiando cada passo rumo a uma vida plena no amor de Deus.&rdquo;
               </p>
               <footer className="text-sm">Pr. Bruno Moraes</footer>
             </blockquote>
