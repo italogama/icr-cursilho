@@ -37,7 +37,7 @@ export default async function handler(
     payment_methods: {
       excluded_payment_types: [
         {
-          id: "pix",
+          id: "bank_transfer",
         },
       ],
     },
