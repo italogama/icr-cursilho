@@ -1,7 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 const mercadopago = require("mercadopago");
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  const eventTitle = process.env.NEXT_PUBLIC_EVENT_TITLE;
+
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Only POST requests allowed" });
   }
@@ -19,14 +24,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let preference = {
     items: [
       {
-        title: "Cursilho ICR",
-        description: "3° Cursilho de Cristandade da Igreja Cristã em Recife",
+        title: eventTitle,
+        description: "Cursilho de Cristandade da Igreja Cristã em Recife",
         unit_price: 370,
         quantity: 1,
       },
     ],
     payer: {
+      name: body.fullName,
       email: body.email,
+    },
+    payment_methods: {
+      excluded_payment_types: [
+        {
+          id: "pix",
+        },
+      ],
     },
   };
 
