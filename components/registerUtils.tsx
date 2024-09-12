@@ -32,8 +32,8 @@ export const registerFormSchema = z
       .string({ required_error: "Você deve preencher sua rua" })
       .min(3, { message: "Você deve preencher sua rua" }),
     addressNumber: z
-      .string({ required_error: "Você deve o número da sua residência" })
-      .min(3, { message: "Você deve o número da sua residência" }),
+      .string({ required_error: "Você deve preencher o número da sua residência" })
+      .min(1, { message: "Você deve preencher o número da sua residência" }),
     addressComplement: z
       .string({ required_error: "Você deve preencher seu complemento" })
       .min(3, { message: "Você deve preencher seu complemento" }),
