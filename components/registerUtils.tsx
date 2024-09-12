@@ -49,7 +49,6 @@ export const registerFormSchema = z
     homePhone: z
       .string({ required_error: "Você deve preencher um número de telefone" })
       .regex(phoneRegex, "Número invalido"),
-    workPhone: z.string().regex(phoneRegex, "Número invalido").optional(),
     contact1Name: z
       .string({ required_error: "Você deve preencher o nome do contato" })
       .min(3, {
