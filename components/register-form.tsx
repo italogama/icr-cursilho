@@ -63,7 +63,6 @@ const defaultValues: Partial<RegisterFormValues> = {
   addressCity: "",
   addressZipCode: "",
   homePhone: "",
-  workPhone: "",
   contact1Name: "",
   contact1Phone: "",
   contact2Name: "",
