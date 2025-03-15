@@ -151,7 +151,7 @@ export function TeamPaymentForm({ className, ...props }: RegisterFormProps) {
             </Button>
           </Link>
           <Card className="p-2 text-center mt-4">
-            <p className="text-xs font-bold tracking-wider text-muted-foreground md:text-sm">Endereço: Rua Frei Atanásio, n° 304 / Jardim São Paulo / Recife - PE / Fones: (81) 99971-6016 / 99936-5151</p>
+            <p className="text-xs font-bold tracking-wider text-muted-foreground md:text-sm">Endereço: Av. Estância, n° 330 / Areias / Recife - PE / Fones: (81) 99971-6016 / 99936-5151</p>
           </Card>
         </form>
       </Form>
