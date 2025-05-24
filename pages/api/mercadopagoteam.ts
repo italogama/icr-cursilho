@@ -8,8 +8,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const body = req.body;
 
-  console.log(body);
-
   if (!body.form.fullName) {
     return res.status(400).json({ data: "USER_NOT_FILLED" });
   }

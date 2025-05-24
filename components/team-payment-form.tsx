@@ -68,7 +68,6 @@ export function TeamPaymentForm({ className, ...props }: RegisterFormProps) {
       });
 
       const data = await response.json();
-      console.log(data);
       if (data.url) {
         window.location.replace(data.url);
         setIsLoading(false);
